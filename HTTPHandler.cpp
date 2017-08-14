@@ -37,10 +37,10 @@ string HTTPHandler::recv() {
             body += buf;
         } while (buf.size() && body_len);
         res += body;
-        cout << body.size() << endl;
-        cout << stoi(header[kbody_len_key]) << endl;
-        assert(body.size() == stoi(header[kbody_len_key]));
-
+        //if connection wasnt closed/no errors
+        if (buf.size()) {
+            assert(body.size() == stoi(header[kbody_len_key]));
+        }
     }
     return res;
 

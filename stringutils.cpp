@@ -6,39 +6,39 @@
 using namespace std;
 
 // trim from start (in place)
-void ltrim(std::string &s) {
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
-        return !std::isspace(ch);
+void ltrim(string &s) {
+    s.erase(s.begin(), find_if(s.begin(), s.end(), [](int ch) {
+        return !isspace(ch);
     }));
 }
 
 // trim from end (in place)
-void rtrim(std::string &s) {
-    s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
-        return !std::isspace(ch);
+void rtrim(string &s) {
+    s.erase(find_if(s.rbegin(), s.rend(), [](int ch) {
+        return !isspace(ch);
     }).base(), s.end());
 }
 
 // trim from both ends (in place)
-void trim(std::string &s) {
+void trim(string &s) {
     ltrim(s);
     rtrim(s);
 }
 
 // trim from start (copying)
-std::string ltrim_copy(std::string s) {
+string ltrim_copy(string s) {
     ltrim(s);
     return s;
 }
 
 // trim from end (copying)
-std::string rtrim_copy(std::string s) {
+string rtrim_copy(string s) {
     rtrim(s);
     return s;
 }
 
 // trim from both ends (copying)
-std::string trim_copy(std::string s) {
+string trim_copy(string s) {
     trim(s);
     return s;
 }
@@ -74,4 +74,16 @@ vector<string> explode( const string &delimiter, const string &str)
                          [](const string& s)
                          { return s.size() == 0; });
     return {arr.begin(), end};
+}
+
+
+string merge(const vector<string>& v, const string& delim) {
+    string res;
+    for (int i = 0; i < v.size(); ++i) {
+        if (i) {
+            res += delim;
+        }
+        res += v[i];
+    }
+    return res;
 }

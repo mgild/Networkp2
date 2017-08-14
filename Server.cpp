@@ -41,21 +41,21 @@ void Server::start() {
             Socket* client = *it;
 			if(FD_ISSET(client->get_sd(), &readSet)) {
                 string res = client->recv();
-                cout << res << endl;
-                assert(res.substr(res.size() - 4, res.size()) == "\r\n\r\n");
 				if(!res.size()) {
 					std::cout << "Connection closed" << std::endl;
 					it = clients.erase(it);
                     delete client;
                     client = nullptr;
 				} else {
+                    cout << res << endl;
+                    assert(res.substr(res.size() - 4, res.size()) == "\r\n\r\n");
+                    // Setting up response
                     HTTPHandler socktoserver("127.0.1.1", 80);
                     socktoserver.connect();
                     socktoserver.send(res);
-//                    socktoserver.send("GET /vod/1000Seg2-Frag3 HTTP/1.1\r\nHost: localhost\r\n\r\n");
                     string resp = socktoserver.recv();
                     client->send(resp);
-                    //client->send("a");
+                    // Ending response (will close connection here. not what I want)
                 }
 			}
 		}
