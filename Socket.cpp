@@ -94,7 +94,8 @@ string Socket::recv() {
     int len_recv = 0;
     if ((len_recv = ::recv(get_sd(), buf, buf_len-1, 0)) > 0) {
         buf[len_recv] = 0;
-        res += buf;
+        //assert(strlen(buf) == len_recv);
+        res += string(buf, len_recv);
     }
     return res;
 }

@@ -42,6 +42,7 @@ void Server::start() {
 			if(FD_ISSET(client->get_sd(), &readSet)) {
                 string res = client->recv();
                 cout << res << endl;
+                assert(res.substr(res.size() - 4, res.size()) == "\r\n\r\n");
 				if(!res.size()) {
 					std::cout << "Connection closed" << std::endl;
 					it = clients.erase(it);
@@ -53,7 +54,7 @@ void Server::start() {
                     socktoserver.send(res);
 //                    socktoserver.send("GET /vod/1000Seg2-Frag3 HTTP/1.1\r\nHost: localhost\r\n\r\n");
                     string resp = socktoserver.recv();
-                    cout << resp << endl;
+                    client->send(resp);
                     //client->send("a");
                 }
 			}

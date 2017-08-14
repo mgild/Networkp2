@@ -20,14 +20,14 @@ string HTTPHandler::recv() {
         buf = Socket::recv();
         delim_loc = buf.find(kheader_delim);
         if (delim_loc != string::npos) {
-            res += buf.substr(0, delim_loc);
+            res += buf.substr(0, delim_loc + kheader_delim.size());
             break;
         } else {
             res += buf;
         }
     } while(buf.size());
     map<string,string> header = gen_header(res);
-    if (res.find(kbody_len_key) != string::npos) {
+    if (header.find(kbody_len_key) != header.end()) {
         assert(delim_loc != string::npos);
         int body_len = stoi(header[kbody_len_key]) - (buf.size() - delim_loc - kheader_delim.size());
         string body = buf.substr(delim_loc + kheader_delim.size());
@@ -37,6 +37,8 @@ string HTTPHandler::recv() {
             body += buf;
         } while (buf.size() && body_len);
         res += body;
+        cout << body.size() << endl;
+        cout << stoi(header[kbody_len_key]) << endl;
         assert(body.size() == stoi(header[kbody_len_key]));
 
     }
