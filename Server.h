@@ -1,8 +1,7 @@
 #ifndef Server_h__
 #define Server_h__
 
-#include "HTTPServerSocket.h"
-#include "HTTPClientSocket.h"
+#include "HTTPHandler.h"
 #include <sys/select.h>
 #include <list>
 

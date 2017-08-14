@@ -28,7 +28,7 @@ public:
     }
 
 
-    std::map<std::string, std::string> recv();
+    std::string recv();
 
     void send(std::string);
 

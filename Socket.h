@@ -34,6 +34,14 @@ class Socket {
 
     public:
 
+        virtual Socket* sock_factory(const char* ip, int port) {
+            return new Socket(ip, port);
+        }
+
+        virtual Socket* sock_factory(int sd, struct sockaddr_in sin) {
+            return new Socket(sd,sin);
+        }
+
         int get_sd() const {
             return sd;
         }

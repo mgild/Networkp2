@@ -5,7 +5,7 @@
 using namespace std;
 
 Server::Server(const char* ip, int port) {
-    s = new HTTPServerSocket(port);
+    s = new HTTPHandler(ip, port);
 }
 
 Server::~Server() {
@@ -40,26 +40,20 @@ void Server::start() {
 		for(auto it = clients.begin(); it != clients.end(); ++it) {
             Socket* client = *it;
 			if(FD_ISSET(client->get_sd(), &readSet)) {
-                map<string,string> res = client->recv();
-                for (auto t : res) {
-                    cout << t.first << " :: " << t.second << endl;
-                }
+                string res = client->recv();
+                cout << res << endl;
 				if(!res.size()) {
 					std::cout << "Connection closed" << std::endl;
 					it = clients.erase(it);
                     delete client;
                     client = nullptr;
 				} else {
-                    HTTPClientSocket socktoserver("127.0.1.1", 80);
-                    cout << "Huh" << endl;
+                    HTTPHandler socktoserver("127.0.1.1", 80);
                     socktoserver.connect();
-                    socktoserver.send("GET /vod/1000Seg2-Frag3 HTTP/1.1\r\nHost: localhost\r\n\r\n");
-                    cout << "VVVVVVVVVVVVVVV" << endl;
-                    map<string,string> resp = socktoserver.recv();
-                    cout << "VVVVVVVVVVVVVVV" << endl;
-                    for (auto t : resp) {
-                        cout << t.first << " :: " << t.second << endl;
-                    }
+                    socktoserver.send(res);
+//                    socktoserver.send("GET /vod/1000Seg2-Frag3 HTTP/1.1\r\nHost: localhost\r\n\r\n");
+                    string resp = socktoserver.recv();
+                    cout << resp << endl;
                     //client->send("a");
                 }
 			}

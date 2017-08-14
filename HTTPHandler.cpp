@@ -29,7 +29,7 @@ string HTTPHandler::recv() {
     map<string,string> header = gen_header(res);
     if (res.find(kbody_len_key) != string::npos) {
         assert(delim_loc != string::npos);
-        int body_len = stoi(header[kbody_len_key]) - (buf.size() - delim_loc);
+        int body_len = stoi(header[kbody_len_key]) - (buf.size() - delim_loc - kheader_delim.size());
         string body = buf.substr(delim_loc + kheader_delim.size());
         do {
             buf = Socket::recv();
@@ -37,7 +37,8 @@ string HTTPHandler::recv() {
             body += buf;
         } while (buf.size() && body_len);
         res += body;
-        assert(body.size() == body_len);
+        assert(body.size() == stoi(header[kbody_len_key]));
+
     }
     return res;
 

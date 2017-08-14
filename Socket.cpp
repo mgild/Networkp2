@@ -22,7 +22,7 @@ Socket* Socket::accept() {
         perror("Error accepting");
         exit(1);
     }
-    return new Socket(td, client_addr);
+    return sock_factory(td, client_addr);
 }
 
 
@@ -44,8 +44,6 @@ Socket::Socket(const char* ip, int port) {
         sin.sin_addr.s_addr = inet_addr(ip);
     }
     sin.sin_port = htons(port);
-
-
 }
 
 
