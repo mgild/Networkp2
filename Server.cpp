@@ -1,4 +1,5 @@
 #include "Server.h"
+#include "stringutils.h"
 #include <algorithm>
 #include <cassert>
 
@@ -16,6 +17,8 @@ void Server::start() {
     s->bind();
     s->listen(100);
     fd_set readSet;
+    HTTPHandler socktoserver("127.0.1.1", 80);
+    socktoserver.connect();
     while (true) {
 		// Set up the readSet
 		FD_ZERO(&readSet);
@@ -50,12 +53,16 @@ void Server::start() {
                     cout << res << endl;
                     assert(res.substr(res.size() - 4, res.size()) == "\r\n\r\n");
                     // Setting up response
-                    HTTPHandler socktoserver("127.0.1.1", 80);
-                    socktoserver.connect();
+                    vector<string> meta = explode("\r\n", res);
+                    string path = explode(" ", meta[0])[1];
+                    cout << path << endl;
+                    //TODO : temporary. the favicon request times out. start in diff threads
+                    if (path == "/favicon.ico") {
+                        continue;
+                    }
                     socktoserver.send(res);
                     string resp = socktoserver.recv();
                     client->send(resp);
-                    // Ending response (will close connection here. not what I want)
                 }
 			}
 		}

@@ -17,6 +17,8 @@ public:
     ~Server();
 
     void start();
+
+//    void handleMsg(Socket* client)
 };
 
 #endif

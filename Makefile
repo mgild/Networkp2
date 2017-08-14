@@ -11,4 +11,4 @@ client: client.cpp
 	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
-	-rm -f *.o *~ *core* server client
+	-rm -f *.o *~ *core* server miProxy
