@@ -11,6 +11,7 @@ class Server {
     std::list<std::unique_ptr<Socket>> clients;
     std::unique_ptr<Socket> s;
     std::unique_ptr<Socket> socktoserver = make_unique<HTTPHandler>("127.0.1.1", 80);
+    std::vector<int> bitrates;
 
 public:
     Server(const char* ip, int port);
@@ -24,7 +25,11 @@ public:
 
     const std::unique_ptr<Socket>& getCDN() {
         return socktoserver;
-    } 
+    }
+
+    std::string calculate_new_url(const std::string&);
+
+    void load_video_info();
 
 //    void handleMsg(Socket* client)
 };
