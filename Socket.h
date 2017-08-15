@@ -14,6 +14,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <map>
+#include <memory>
 
 struct ErrorMSG {
     static const std::string kSyntaxError ;
@@ -23,7 +24,10 @@ struct ErrorMSG {
 
 
 
-
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args) {
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
 
 class Socket {
     private:
@@ -34,19 +38,19 @@ class Socket {
 
     public:
 
-        virtual Socket* sock_factory(const char* ip, int port) {
-            return new Socket(ip, port);
+        virtual std::unique_ptr<Socket> sock_factory(const char* ip, int port) {
+            return make_unique<Socket>(ip, port);
         }
 
-        virtual Socket* sock_factory(int sd, struct sockaddr_in sin) {
-            return new Socket(sd,sin);
+        virtual std::unique_ptr<Socket> sock_factory(int sd, struct sockaddr_in sin) {
+            return make_unique<Socket>(sd,sin);
         }
 
         int get_sd() const {
             return sd;
         }
 
-        Socket* accept();
+        std::unique_ptr<Socket> accept();
 
         virtual std::string recv();
         virtual void send(std::string msg);

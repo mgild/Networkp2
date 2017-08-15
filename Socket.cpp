@@ -13,7 +13,7 @@ Socket::Socket():sd(-1) {
     memset(&sin, 0, sizeof(sin));
 }
 
-Socket* Socket::accept() {
+unique_ptr<Socket> Socket::accept() {
     struct sockaddr_in client_addr;
     socklen_t client_len = sizeof(client_addr);
     int td;

@@ -4,11 +4,12 @@
 #include "HTTPHandler.h"
 #include <sys/select.h>
 #include <list>
+#include <memory>
 
 
 class Server {
-    std::list<Socket*> clients;
-    Socket* s;
+    std::list<std::unique_ptr<Socket>> clients;
+    std::unique_ptr<Socket> s;
 
 public:
     Server(const char* ip, int port);
