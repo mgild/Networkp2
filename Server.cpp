@@ -7,6 +7,8 @@ using namespace std;
 
 Server::Server(const char* ip, int port) {
     s = make_unique<HTTPHandler>(ip, port);
+    // connect proxy to temp cdn
+    socktoserver->connect();
 }
 
 Server::~Server() {
@@ -16,8 +18,6 @@ void Server::start() {
     s->bind();
     s->listen(100);
     fd_set readSet;
-    HTTPHandler socktoserver("127.0.1.1", 80);
-    socktoserver.connect();
     while (true) {
 		// Set up the readSet
 		FD_ZERO(&readSet);
@@ -37,27 +37,39 @@ void Server::start() {
             clients.push_back(s->accept());
 		}
 		for(auto it = clients.begin(); it != clients.end(); ++it) {
-			if(FD_ISSET((*it)->get_sd(), &readSet)) {
-                string res = (*it)->recv();
-				if(!res.size()) {
-					std::cout << "Connection closed" << std::endl;
-					it = clients.erase(it);
-				} else {
-                    cout << res << endl;
-                    assert(res.substr(res.size() - 4, res.size()) == "\r\n\r\n");
-                    // Setting up response
-                    vector<string> meta = explode("\r\n", res);
-                    string path = explode(" ", meta[0])[1];
-                    cout << path << endl;
-                    //TODO : temporary. the favicon request times out. start in diff threads
-                    if (path == "/favicon.ico") {
-                        continue;
-                    }
-                    socktoserver.send(res);
-                    string resp = socktoserver.recv();
-                    (*it)->send(resp);
+			if (FD_ISSET((*it)->get_sd(), &readSet)) {
+                if (handle_request(*it) < 0) {
+                    it = clients.erase(it);
                 }
 			}
 		}
     }
 }
+
+
+int Server::handle_request(const unique_ptr<Socket>& client) {
+    string res = client->recv();
+    if(!res.size()) {
+        cout << "Connection closed" << endl;
+        return -1;
+    }
+    cout << res << endl;
+    assert(res.substr(res.size() - 4, res.size()) == "\r\n\r\n");
+    // Setting up response
+    vector<string> meta = explode("\r\n", res);
+    string path = explode(" ", meta[0])[1];
+    cout << path << endl;
+    //TODO : temporary. the favicon request times out. start in diff threads
+    if (path == "/favicon.ico") {
+        return 0;
+    }
+    getCDN()->send(res);
+    string resp = getCDN()->recv();
+    if (!resp.size()) {
+        cerr << "lost connection to server" << endl;
+        return -1;
+    }
+    client->send(resp);
+    return 0;
+}
+

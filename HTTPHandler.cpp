@@ -14,7 +14,7 @@ const string HTTPHandler::kbody_len_key = "Content-Length";
 string HTTPHandler::recv() {
     string res;
     string buf;
-    int delim_loc = 0;
+    size_t delim_loc = 0;
     const string kheader_delim = kdelim+kdelim;
     do {
         buf = Socket::recv();
@@ -39,7 +39,7 @@ string HTTPHandler::recv() {
         res += body;
         //if connection wasnt closed/no errors
         if (buf.size()) {
-            assert(body.size() == stoi(header[kbody_len_key]));
+            assert((int)body.size() == stoi(header[kbody_len_key]));
         }
     }
     return res;
