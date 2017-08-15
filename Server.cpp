@@ -56,13 +56,17 @@ int Server::handle_request(const unique_ptr<Socket>& client) {
     cout << res << endl;
     assert(res.substr(res.size() - 4, res.size()) == "\r\n\r\n");
     // Setting up response
-    vector<string> meta = explode("\r\n", res);
-    string path = explode(" ", meta[0])[1];
-    cout << path << endl;
+    vector<string> headers = explode("\r\n", res);
+    vector<string> meta = explode(" ", headers[0]);
+    cout << meta[1] << endl;
     //TODO : temporary. the favicon request times out. start in diff threads
-    if (path == "/favicon.ico") {
+    if (meta[1] == "/favicon.ico") {
         return 0;
     }
+    meta[1] = meta[1];
+    headers[0] = join(meta, " ");
+    res = join(headers, "\r\n") + "\r\n\r\n";
+    assert(res.substr(res.size() - 4, res.size()) == "\r\n\r\n");
     getCDN()->send(res);
     string resp = getCDN()->recv();
     if (!resp.size()) {

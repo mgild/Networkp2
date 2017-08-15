@@ -41,4 +41,4 @@ std::string trim_copy(std::string s);
 
 std::vector<std::string> explode( const std::string &delimiter, const std::string &str);
 
-std::string merge(const std::vector<std::string>& v, const std::string& delim);
+std::string join(const std::vector<std::string>& v, const std::string& delim);
