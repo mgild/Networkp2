@@ -83,6 +83,18 @@ std::string Server::calculate_new_url(const std::string& path) {
     if (path == "/vod/big_buck_bunny.f4m") {
         return "/vod/big_buck_bunny_nolist.f4m";
     }
+    if (path.find("/vod/") == 0) {
+        string basename = explode("/", path).back();
+        string newpath = "/vod/";
+        vector<string> sep1 = explode("-", basename);
+        string frag = explode("Frag", sep1.back()).back();
+        vector<string> sep2 = explode("Seg", sep1[0]);
+        string bitrate = sep2[0];
+        string seg = sep2[1];
+        newpath += to_string(bitrates[0]) + "Seg" + seg + "-Frag" + frag;
+        cout << newpath << endl;
+        return newpath;
+    }
     return path;
 }
 
