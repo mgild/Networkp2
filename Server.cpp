@@ -65,7 +65,6 @@ int Server::handle_request(const unique_ptr<HTTPHandler>& client) {
         cout << "Connection closed" << endl;
         return -1;
     }
-    cout << res << endl;
     assert(res.substr(res.size() - 4, res.size()) == "\r\n\r\n");
     // Setting up response
     vector<string> headers = explode("\r\n", res);
@@ -88,9 +87,10 @@ int Server::handle_request(const unique_ptr<HTTPHandler>& client) {
     }
     auto done = high_resolution_clock::now();
     duration<double> time_span = duration_cast<duration<double>>(done - started);
-    double megabits = (1.0 * res.size() * 8)/1024;
-    double t_new =  megabits/time_span.count();
+    double megabits = (1.0 * res.size() * 8)/1024/1024;
+    double t_new = megabits/time_span.count();
     cout << t_new << " Mbps" << endl;
+    cout << meta[1] << endl;
     logger::println(
                 to_string(time_span.count()) + " " +
                 to_string(t_new) + " " +
@@ -116,7 +116,6 @@ std::string Server::calculate_new_url(const std::string& path, const std::unique
         string bitrate = sep2[0];
         string seg = sep2[1];
         newpath += to_string(calculate_bitrate(client)) + "Seg" + seg + "-Frag" + frag;
-        cout << newpath << endl;
         return newpath;
     }
     return path;
@@ -158,7 +157,7 @@ int Server::calculate_bitrate(const std::unique_ptr<HTTPHandler>& client) {
     double t_cur = client->get_throughput();
     int chosen = bitrates[0];
     for (int bitrate: bitrates) {
-        if (t_cur >= 1.5*bitrate) {
+        if (t_cur >= 1.5*bitrate/1000) {
             chosen = bitrate;
         } else {
             break;
