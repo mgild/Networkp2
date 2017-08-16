@@ -3,9 +3,9 @@ CFLAGS = -g -Wall -std=c++11
 
 all: miProxy
 
-miProxy: Server.cpp main.cpp Socket.cpp HTTPHandler.cpp stringutils.cpp
+miProxy: Server.cpp main.cpp Socket.cpp HTTPHandler.cpp stringutils.cpp logger.cpp
 	$(CC) $(CFLAGS) Server.cpp main.cpp HTTPHandler.cpp Socket.cpp \
-	   stringutils.cpp	-o miProxy
+	   stringutils.cpp logger.cpp	-o miProxy
 
 client: client.cpp
 	$(CC) $(CFLAGS) -o $@ $^

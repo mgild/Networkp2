@@ -7,10 +7,16 @@
 #include <memory>
 
 
+template<typename D, typename B>
+std::unique_ptr<D> static_cast_ptr(std::unique_ptr<B>&& base)
+{
+    return std::unique_ptr<D>(static_cast<D*>(base.release()));
+}
+
 class Server {
-    std::list<std::unique_ptr<Socket>> clients;
-    std::unique_ptr<Socket> s;
-    std::unique_ptr<Socket> socktoserver = make_unique<HTTPHandler>("127.0.1.1", 80);
+    std::list<std::unique_ptr<HTTPHandler>> clients;
+    std::unique_ptr<HTTPHandler> s;
+    std::unique_ptr<HTTPHandler> socktoserver = make_unique<HTTPHandler>("127.0.1.1", 80);
     std::vector<int> bitrates;
 
 public:
@@ -21,16 +27,17 @@ public:
 
     void start();
 
-    int handle_request(const std::unique_ptr<Socket>& client);
+    int handle_request(const std::unique_ptr<HTTPHandler>& client);
 
-    const std::unique_ptr<Socket>& getCDN() {
+    const std::unique_ptr<HTTPHandler>& getCDN() {
         return socktoserver;
     }
 
-    std::string calculate_new_url(const std::string&);
+    std::string calculate_new_url(const std::string&, const std::unique_ptr<HTTPHandler>& client);
 
     void load_video_info();
 
+    int calculate_bitrate(const std::unique_ptr<HTTPHandler>& client);
 //    void handleMsg(Socket* client)
 };
 

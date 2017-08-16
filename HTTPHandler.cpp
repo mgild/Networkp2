@@ -10,6 +10,7 @@ const string HTTPHandler::kproto_key = "Protocol";
 const string HTTPHandler::kpath_key = "Path";
 const string HTTPHandler::kbody_key = "Content";
 const string HTTPHandler::kbody_len_key = "Content-Length";
+double HTTPHandler::alpha = .005;
 
 string HTTPHandler::recv() {
     string res;

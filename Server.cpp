@@ -1,9 +1,11 @@
 #include "Server.h"
 #include "stringutils.h"
+#include "logger.h"
 #include <algorithm>
 #include <cassert>
-
+#include <chrono>
 using namespace std;
+using namespace std::chrono;
 
 Server::Server(const char* ip, int port) {
     s = make_unique<HTTPHandler>(ip, port);
@@ -35,7 +37,7 @@ void Server::start() {
 		int err = select(maxfd + 1, &readSet, NULL, NULL, NULL);
 		assert(err != -1);
 		if(FD_ISSET(s->get_sd(), &readSet)) {
-            clients.push_back(s->accept());
+            clients.push_back(static_cast_ptr<HTTPHandler>(s->accept()));
 		}
 		for(auto it = clients.begin(); it != clients.end(); ++it) {
 			if (FD_ISSET((*it)->get_sd(), &readSet)) {
@@ -48,7 +50,16 @@ void Server::start() {
 }
 
 
-int Server::handle_request(const unique_ptr<Socket>& client) {
+/**
+ * @Brief takes a client socket ready to be read from.  Should ideally wait
+ * until the client socket is ready to be read from before calling.
+ * Return 0 on success, -1 on error
+ *
+ * @Param client client socket to read and respond to
+ *
+ */
+int Server::handle_request(const unique_ptr<HTTPHandler>& client) {
+    auto started = high_resolution_clock::now();
     string res = client->recv();
     if(!res.size()) {
         cout << "Connection closed" << endl;
@@ -64,22 +75,35 @@ int Server::handle_request(const unique_ptr<Socket>& client) {
     if (meta[1] == "/favicon.ico") {
         return 0;
     }
-    meta[1] = calculate_new_url(meta[1]);
+    meta[1] = calculate_new_url(meta[1], client);
     headers[0] = join(meta, " ");
     res = join(headers, "\r\n") + "\r\n\r\n";
     assert(res.substr(res.size() - 4, res.size()) == "\r\n\r\n");
-    getCDN()->send(res);
-    string resp = getCDN()->recv();
+    const unique_ptr<HTTPHandler>& cdn = getCDN();
+    cdn->send(res);
+    string resp = cdn->recv();
     if (!resp.size()) {
         cerr << "lost connection to server" << endl;
         return -1;
     }
+    auto done = high_resolution_clock::now();
+    duration<double> time_span = duration_cast<duration<double>>(done - started);
+    double megabits = (1.0 * res.size() * 8)/1024;
+    double t_new =  megabits/time_span.count();
+    cout << t_new << " Mbps" << endl;
+    logger::println(
+                to_string(time_span.count()) + " " +
+                to_string(t_new) + " " +
+                to_string(client->get_throughput()) + " " +
+                to_string(calculate_bitrate(client)) + " " +
+                meta[1]);
+    client->update_throughput(t_new);
     client->send(resp);
     return 0;
 }
 
 
-std::string Server::calculate_new_url(const std::string& path) {
+std::string Server::calculate_new_url(const std::string& path, const std::unique_ptr<HTTPHandler>& client) {
     if (path == "/vod/big_buck_bunny.f4m") {
         return "/vod/big_buck_bunny_nolist.f4m";
     }
@@ -91,13 +115,17 @@ std::string Server::calculate_new_url(const std::string& path) {
         vector<string> sep2 = explode("Seg", sep1[0]);
         string bitrate = sep2[0];
         string seg = sep2[1];
-        newpath += to_string(bitrates[0]) + "Seg" + seg + "-Frag" + frag;
+        newpath += to_string(calculate_bitrate(client)) + "Seg" + seg + "-Frag" + frag;
         cout << newpath << endl;
         return newpath;
     }
     return path;
 }
 
+
+/**
+ * @Brief loads video bitrates available
+ */
 void Server::load_video_info() {
     string req = "GET /vod/big_buck_bunny.f4m HTTP/1.1\r\n"
     "Host: localhost:11000\r\n"
@@ -108,8 +136,9 @@ void Server::load_video_info() {
     "Referer: http://localhost:11000/StrobeMediaPlayback.swf\r\n"
     "Connection: keep-alive\r\n"
     "\r\n";
-    getCDN()->send(req);
-    string resp = getCDN()->recv();
+    const unique_ptr<HTTPHandler>& cdn = getCDN();
+    cdn->send(req);
+    string resp = cdn->recv();
     if (!resp.size()) {
         cerr << "lost connection to server" << endl;
         exit(1);
@@ -122,4 +151,18 @@ void Server::load_video_info() {
             bitrates.push_back(bitrate);
         }
     }
+}
+
+//bitrates should be sorted
+int Server::calculate_bitrate(const std::unique_ptr<HTTPHandler>& client) {
+    double t_cur = client->get_throughput();
+    int chosen = bitrates[0];
+    for (int bitrate: bitrates) {
+        if (t_cur >= 1.5*bitrate) {
+            chosen = bitrate;
+        } else {
+            break;
+        }
+    }
+    return chosen;
 }
