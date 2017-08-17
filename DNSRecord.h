@@ -3,6 +3,7 @@
 
 #include <string.h>
 
+#include <arpa/inet.h>
 struct DNSRecord
 {
 	char NAME[100];

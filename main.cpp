@@ -11,5 +11,9 @@ int main(int argc, char** argv) {
     Server s(nullptr, stoi(argv[3]));
     string dns_ip = argv[4];
     int dns_port = stoi(argv[5]);
+    if (argc > 6) {
+        string cdnip = argv[6];
+        s.set_cdn_ip(cdnip);
+    }
     s.start();
 }

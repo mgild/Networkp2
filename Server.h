@@ -16,7 +16,7 @@ std::unique_ptr<D> static_cast_ptr(std::unique_ptr<B>&& base)
 class Server {
     std::list<std::unique_ptr<HTTPHandler>> clients;
     std::unique_ptr<HTTPHandler> s;
-    std::unique_ptr<HTTPHandler> socktoserver = make_unique<HTTPHandler>("127.0.1.1", 80);
+    std::unique_ptr<HTTPHandler> socktoserver = make_unique<HTTPHandler>("10.0.0.1", 80);
     std::vector<int> bitrates;
 
 public:
@@ -39,6 +39,10 @@ public:
 
     int calculate_bitrate(const std::unique_ptr<HTTPHandler>& client);
 //    void handleMsg(Socket* client)
+
+    void set_cdn_ip(const std::string& ip) {
+        socktoserver = make_unique<HTTPHandler>(ip.c_str(), 80);  
+    }
 };
 
 #endif

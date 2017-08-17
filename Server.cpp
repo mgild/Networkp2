@@ -87,7 +87,7 @@ int Server::handle_request(const unique_ptr<HTTPHandler>& client) {
     }
     auto done = high_resolution_clock::now();
     duration<double> time_span = duration_cast<duration<double>>(done - started);
-    double megabits = (1.0 * res.size() * 8)/1024/1024;
+    double megabits = (1.0 * (resp.size()) * 8)/1024/1024;
     double t_new = megabits/time_span.count();
     cout << t_new << " Mbps" << endl;
     cout << meta[1] << endl;
@@ -96,8 +96,11 @@ int Server::handle_request(const unique_ptr<HTTPHandler>& client) {
                 to_string(t_new) + " " +
                 to_string(client->get_throughput()) + " " +
                 to_string(calculate_bitrate(client)) + " " +
-                meta[1]);
+                meta[1] + " " +
+                "Time(s): " + to_string(time_span.count()) + " " +
+                "Megabits: " + to_string(megabits));
     client->update_throughput(t_new);
+    //TODO: if send returned 0, connection is closed also
     client->send(resp);
     return 0;
 }
@@ -157,7 +160,8 @@ int Server::calculate_bitrate(const std::unique_ptr<HTTPHandler>& client) {
     double t_cur = client->get_throughput();
     int chosen = bitrates[0];
     for (int bitrate: bitrates) {
-        if (t_cur >= 1.5*bitrate/1000) {
+        //logger::println(to_string(t_cur) + " " + to_string(1.5*bitrate/1000));
+        if (t_cur*1000 >= 1.5*bitrate) {
             chosen = bitrate;
         } else {
             break;

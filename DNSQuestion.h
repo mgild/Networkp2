@@ -3,6 +3,9 @@
 
 #include <string.h>
 
+#include <arpa/inet.h>
+
+
 struct DNSQuestion
 {
 	char QNAME[100];

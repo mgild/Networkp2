@@ -1,6 +1,8 @@
 #ifndef __DNS_HEADER_H__
 #define __DNS_HEADER_H__
 
+#include <arpa/inet.h>
+
 struct DNSHeader
 {
 	ushort ID;
