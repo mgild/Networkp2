@@ -36,6 +36,7 @@ class Socket {
 
         Socket();
 
+
     public:
 
         virtual std::unique_ptr<Socket> sock_factory(const char* ip, int port) {
@@ -53,7 +54,13 @@ class Socket {
         std::unique_ptr<Socket> accept();
 
         virtual std::string recv();
+
+        virtual std::string recvfrom(const std::unique_ptr<sockaddr_in>& src);
+
         virtual void send(std::string msg);
+
+        virtual void send(std::string msg, const std::unique_ptr<sockaddr_in>& dest);
+
         void close();
 
         /**
@@ -64,7 +71,7 @@ class Socket {
          * @Param num_connections max # of tcp connections allowed to wait
          *
          */
-        Socket(const char* ip, int port);
+        Socket(const char* ip, int port, const std::string& mode="TCP");
         Socket(int sd, struct sockaddr_in sin):sd(sd), sin(sin){}
 
         /**

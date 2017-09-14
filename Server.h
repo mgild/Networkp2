@@ -41,7 +41,7 @@ public:
 //    void handleMsg(Socket* client)
 
     void set_cdn_ip(const std::string& ip) {
-        socktoserver = make_unique<HTTPHandler>(ip.c_str(), 80);  
+        socktoserver = make_unique<HTTPHandler>(ip.c_str(), 80);
     }
 };
 
