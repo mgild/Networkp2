@@ -24,13 +24,6 @@ public:
 
     HTTPHandler(int sd, struct sockaddr_in sin):Socket(sd,sin),T_cur(0){}
 
-    virtual std::unique_ptr<Socket> sock_factory(const char* ip, int port) override {
-        return make_unique<HTTPHandler>(ip, port);
-    }
-    virtual std::unique_ptr<Socket> sock_factory(int sd, struct sockaddr_in sin) override {
-        return make_unique<HTTPHandler>(sd,sin);
-    }
-    
     std::map<std::string, std::string> gen_header(const std::string& hdr);
 
     std::string recv();

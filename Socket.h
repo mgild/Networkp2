@@ -24,10 +24,10 @@ struct ErrorMSG {
 
 
 
-template<typename T, typename... Args>
-std::unique_ptr<T> make_unique(Args&&... args) {
-    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-}
+/* template<typename T, typename... Args> */
+// std::unique_ptr<T> make_unique(Args&&... args) {
+    // return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+/* } */
 
 class Socket {
     private:
@@ -36,30 +36,21 @@ class Socket {
 
         Socket();
 
+    protected:
+        void set_sd(int _sd) {
+            sd = _sd;
+        }
 
     public:
-
-        virtual std::unique_ptr<Socket> sock_factory(const char* ip, int port) {
-            return make_unique<Socket>(ip, port);
-        }
-
-        virtual std::unique_ptr<Socket> sock_factory(int sd, struct sockaddr_in sin) {
-            return make_unique<Socket>(sd,sin);
-        }
 
         int get_sd() const {
             return sd;
         }
 
-        std::unique_ptr<Socket> accept();
+        struct sockaddr_in get_sin() const {
+            return sin;
+        }
 
-        virtual std::string recv();
-
-        virtual std::string recvfrom(const std::unique_ptr<sockaddr_in>& src);
-
-        virtual void send(std::string msg);
-
-        virtual void send(std::string msg, const std::unique_ptr<sockaddr_in>& dest);
 
         void close();
 
@@ -71,7 +62,7 @@ class Socket {
          * @Param num_connections max # of tcp connections allowed to wait
          *
          */
-        Socket(const char* ip, int port, const std::string& mode="TCP");
+        Socket(const char* ip, int port);
         Socket(int sd, struct sockaddr_in sin):sd(sd), sin(sin){}
 
         /**
@@ -89,9 +80,6 @@ class Socket {
 
 
         void bind();
-
-        void listen(int num_connections);
-
 };
 
 #endif
